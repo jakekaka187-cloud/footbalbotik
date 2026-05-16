@@ -9,3 +9,7 @@ class PvPGameStates(StatesGroup):
     waiting_for_opponent = State()
     waiting_for_guess = State()
     waiting_for_join_code = State()
+
+
+class TransferGameStates(StatesGroup):
+    waiting_for_guess = State()

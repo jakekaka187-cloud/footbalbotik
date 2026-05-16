@@ -10,7 +10,7 @@ def main_menu_keyboard() -> ReplyKeyboardMarkup:
     )
     builder.row(
         KeyboardButton(text="🏟️ Угадай клуб"),
-        
+        KeyboardButton(text="💱 Угадай трансфер"),
     )
     builder.row(
         KeyboardButton(text="📊 Мой профиль"),
@@ -57,6 +57,24 @@ def play_again_solo_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(text="⚽ Ещё раз!", callback_data="play_again_solo"),
+        InlineKeyboardButton(text="🏠 В меню", callback_data="main_menu"),
+    )
+    return builder.as_markup()
+
+
+def transfer_game_keyboard(transfer_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="💡 Подсказка", callback_data=f"transfer_hint:{transfer_id}"),
+        InlineKeyboardButton(text="🏳️ Сдаться", callback_data=f"transfer_giveup:{transfer_id}"),
+    )
+    return builder.as_markup()
+
+
+def play_again_transfer_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="💱 Ещё раз!", callback_data="transfer_play_again"),
         InlineKeyboardButton(text="🏠 В меню", callback_data="main_menu"),
     )
     return builder.as_markup()

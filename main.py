@@ -5,7 +5,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import BOT_TOKEN
 from database.db import init_db
-from handlers import common, game_solo, game_pvp, profile, leaderboard, game_clubs
+from handlers import common, game_solo, game_pvp, profile, leaderboard, game_clubs, game_transfers
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,6 +29,7 @@ async def main():
     dp.include_router(profile.router)
     dp.include_router(leaderboard.router)
     dp.include_router(game_clubs.router)
+    dp.include_router(game_transfers.router)
 
     logger.info("Bot started!")
     await dp.start_polling(bot)
