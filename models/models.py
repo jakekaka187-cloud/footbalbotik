@@ -18,6 +18,8 @@ class User:
     created_at: Optional[datetime] = None
     season_score: int = 0
     season_wins: int = 0
+    referred_by: Optional[int] = None
+    referral_count: int = 0
 
 
 @dataclass
