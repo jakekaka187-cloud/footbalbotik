@@ -175,6 +175,33 @@ async def apply_referral(new_user_id: int, referrer_id: int) -> bool:
         return True
 
 
+async def get_bot_stats() -> dict:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        total_users = (await (await db.execute("SELECT COUNT(*) FROM users")).fetchone())[0]
+        active_today = (await (await db.execute(
+            "SELECT COUNT(DISTINCT user_id) FROM game_history WHERE played_at >= date('now')"
+        )).fetchone())[0]
+        active_week = (await (await db.execute(
+            "SELECT COUNT(DISTINCT user_id) FROM game_history WHERE played_at >= date('now', '-7 days')"
+        )).fetchone())[0]
+        total_games = (await (await db.execute("SELECT COUNT(*) FROM game_history")).fetchone())[0]
+        total_referrals = (await (await db.execute(
+            "SELECT COUNT(*) FROM users WHERE referred_by IS NOT NULL"
+        )).fetchone())[0]
+        top = await (await db.execute(
+            "SELECT first_name, username, season_score, season_wins FROM users ORDER BY season_score DESC LIMIT 3"
+        )).fetchall()
+        return {
+            "total_users": total_users,
+            "active_today": active_today,
+            "active_week": active_week,
+            "total_games": total_games,
+            "total_referrals": total_referrals,
+            "top3": [dict(r) for r in top],
+        }
+
+
 async def get_referral_stats(telegram_id: int) -> dict:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
