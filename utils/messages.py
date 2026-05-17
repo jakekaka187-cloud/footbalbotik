@@ -191,16 +191,68 @@ def profile_text(user) -> str:
 
 # ─── Leaderboard ─────────────────────────────────────────────────────────────
 
-def leaderboard_text(rows: list) -> str:
+SCORING_RULES_TEXT = (
+    "📊 *Система очков*\n\n"
+    "⚽ *Угадай карьеру (соло / дуэль):*\n"
+    "┣ 1 клуб  → 100 очков\n"
+    "┣ 2 клуба → 80 очков\n"
+    "┣ 3 клуба → 60 очков\n"
+    "┣ 4 клуба → 40 очков\n"
+    "┗ 5+ клубов → 20 очков\n\n"
+    "🏟️ *Угадай клуб:*\n"
+    "┣ 3 игрока  → 100 очков\n"
+    "┣ 4–5 игр. → 60 очков\n"
+    "┣ 6–7 игр. → 40 очков\n"
+    "┣ 8–9 игр. → 25 очков\n"
+    "┗ 10–11 игр. → 10 очков\n\n"
+    "💱 *Угадай трансфер:*\n"
+    "┣ 1 подсказка → 100 очков\n"
+    "┣ 2 подсказки → 60 очков\n"
+    "┗ 3 подсказки → 30 очков\n\n"
+    "🏆 *Сдался соперник в PvP → +50 очков*\n\n"
+    "💡 Чем быстрее угадаешь — тем больше очков!"
+)
+
+
+def competition_leaderboard_text(rows: list, end_date: str, min_wins: int) -> str:
     medals = ["🥇", "🥈", "🥉"]
-    lines = ["🏆 *Топ игроков по очкам*\n"]
-    for i, row in enumerate(rows):
-        medal = medals[i] if i < 3 else f"{i + 1}."
-        name = row.get("username") or row.get("first_name", "Игрок")
-        score = row["total_score"]
-        wins = row["games_won"]
-        lines.append(f"{medal} *{name}* — {score} очков ({wins} побед)")
+    lines = [
+        "🏆 *КОНКУРС — ТОП ИГРОКОВ*\n",
+        f"📅 Конкурс завершается: *{end_date}*",
+        f"🎯 Попасть в топ: минимум *{min_wins} победы*\n",
+    ]
+    if not rows:
+        lines.append(
+            "Пока никто не набрал достаточно побед.\n"
+            "Сыграй первым и займи лидерство! 🚀"
+        )
+    else:
+        for i, row in enumerate(rows):
+            medal = medals[i] if i < 3 else f"  {i + 1}."
+            name = row.get("username") or row.get("first_name", "Игрок")
+            score = row["season_score"]
+            wins = row["season_wins"]
+            lines.append(f"{medal} *{name}* — {score} оч. ({wins} побед)")
     return "\n".join(lines)
+
+
+def alltime_leaderboard_text(rows: list) -> str:
+    medals = ["🥇", "🥈", "🥉"]
+    lines = ["🕐 *ТОП ИГРОКОВ — ВСЁ ВРЕМЯ*\n"]
+    if not rows:
+        lines.append("Ещё никто не играл. Будь первым! 🚀")
+    else:
+        for i, row in enumerate(rows):
+            medal = medals[i] if i < 3 else f"  {i + 1}."
+            name = row.get("username") or row.get("first_name", "Игрок")
+            score = row["total_score"]
+            wins = row["games_won"]
+            lines.append(f"{medal} *{name}* — {score} оч. ({wins} побед)")
+    return "\n".join(lines)
+
+
+def leaderboard_text(rows: list) -> str:
+    return alltime_leaderboard_text(rows)
 
 
 # ─── Errors ──────────────────────────────────────────────────────────────────

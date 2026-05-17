@@ -9,16 +9,20 @@ DATABASE_URL = os.getenv("DATABASE_URL", "football_bot.db")
 # Game settings
 MAX_HINTS_BEFORE_PENALTY = 3       # After 3 clubs shown — reduced points
 MAX_CLUBS_TOTAL = 15                # Max clubs to show before game ends
+# ── Scoring (all games normalized to same scale) ──────────────────────────────
+# Career solo/PvP: points by clubs shown
 POINTS_TABLE = {
-    1: 100,   # Guessed after 1 club
-    2: 85,
-    3: 70,
-    4: 55,
-    5: 40,
-    6: 25,
-    7: 15,
-    8: 5,
+    1: 100,
+    2: 80,
+    3: 60,
+    4: 40,
+    5: 20,
 }
+POINTS_DEFAULT = 10  # 6+ clubs shown
+
+# Competition
+COMPETITION_END_DATE = "01.06.2026"
+COMPETITION_MIN_WINS = 3  # minimum wins to appear in competition leaderboard
 
 # PvP settings
 PVP_ROOM_EXPIRY_SECONDS = 600      # 10 minutes to join

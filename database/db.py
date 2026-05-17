@@ -1,7 +1,7 @@
 import aiosqlite
 import json
 from typing import Optional
-from config import DATABASE_URL
+from config import DATABASE_URL, COMPETITION_MIN_WINS
 from models import User
 
 
@@ -50,6 +50,15 @@ async def init_db():
                 played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        # Add competition columns if they don't exist yet (safe for existing DBs)
+        for col_def in [
+            "ALTER TABLE users ADD COLUMN season_score INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN season_wins INTEGER DEFAULT 0",
+        ]:
+            try:
+                await db.execute(col_def)
+            except Exception:
+                pass
         await db.commit()
 
 
@@ -102,7 +111,9 @@ async def update_user_stats(telegram_id: int, won: bool, score: int):
                 total_score = total_score + ?,
                 best_score = ?,
                 current_streak = ?,
-                best_streak = ?
+                best_streak = ?,
+                season_score = season_score + ?,
+                season_wins = season_wins + ?
             WHERE telegram_id = ?
         """, (
             1 if won else 0,
@@ -111,6 +122,8 @@ async def update_user_stats(telegram_id: int, won: bool, score: int):
             best_score,
             new_streak,
             best_streak,
+            score,
+            1 if won else 0,
             telegram_id
         ))
         await db.commit()
@@ -125,6 +138,19 @@ async def get_leaderboard(limit: int = 10) -> list:
             ORDER BY total_score DESC
             LIMIT ?
         """, (limit,))
+        return [dict(row) for row in await cursor.fetchall()]
+
+
+async def get_competition_leaderboard(limit: int = 10) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("""
+            SELECT telegram_id, username, first_name, season_score, season_wins
+            FROM users
+            WHERE season_wins >= ?
+            ORDER BY season_score DESC
+            LIMIT ?
+        """, (COMPETITION_MIN_WINS, limit))
         return [dict(row) for row in await cursor.fetchall()]
 
 

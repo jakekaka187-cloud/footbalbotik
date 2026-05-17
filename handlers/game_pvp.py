@@ -253,7 +253,7 @@ async def handle_pvp_giveup(callback: CallbackQuery, state: FSMContext, bot: Bot
     from database.db import update_user_stats
     await update_user_stats(callback.from_user.id, won=False, score=0)
     if opponent_id:
-        await update_user_stats(opponent_id, won=True, score=10)
+        await update_user_stats(opponent_id, won=True, score=50)
 
     await state.clear()
     if opponent_id:

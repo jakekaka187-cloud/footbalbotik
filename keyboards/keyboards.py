@@ -80,6 +80,28 @@ def play_again_transfer_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def leaderboard_keyboard(mode: str = "season") -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="📊 Таблица очков", callback_data="scoring_rules"),
+        InlineKeyboardButton(
+            text="🕐 Все времена" if mode == "season" else "🏆 Конкурс",
+            callback_data="leaderboard_alltime" if mode == "season" else "leaderboard_season",
+        ),
+    )
+    builder.row(InlineKeyboardButton(text="🏠 В меню", callback_data="main_menu"))
+    return builder.as_markup()
+
+
+def scoring_rules_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="🏆 Конкурс", callback_data="leaderboard_season"),
+        InlineKeyboardButton(text="🏠 В меню", callback_data="main_menu"),
+    )
+    return builder.as_markup()
+
+
 def play_again_pvp_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(

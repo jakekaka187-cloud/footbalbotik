@@ -16,6 +16,8 @@ class User:
     current_streak: int = 0
     best_streak: int = 0
     created_at: Optional[datetime] = None
+    season_score: int = 0
+    season_wins: int = 0
 
 
 @dataclass

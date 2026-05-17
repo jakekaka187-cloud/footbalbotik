@@ -91,8 +91,16 @@ def check_club_answer(answer: str, club: dict) -> bool:
 
 
 def calculate_club_score(revealed: int) -> int:
-    scores = {3: 100, 4: 85, 5: 70, 6: 55, 7: 40, 8: 30, 9: 20, 10: 15, 11: 10}
-    return scores.get(revealed, 10)
+    if revealed <= 3:
+        return 100
+    elif revealed <= 5:
+        return 60
+    elif revealed <= 7:
+        return 40
+    elif revealed <= 9:
+        return 25
+    else:
+        return 10
 
 
 # ── СОЛО ИГРА ────────────────────────────────────────
@@ -507,7 +515,7 @@ async def handle_clubs_pvp_giveup(callback: CallbackQuery, state: FSMContext, bo
     await update_session(room_code, status="finished", winner_id=opponent_id)
     await update_user_stats(callback.from_user.id, won=False, score=0)
     if opponent_id:
-        await update_user_stats(opponent_id, won=True, score=10)
+        await update_user_stats(opponent_id, won=True, score=50)
 
     await state.clear()
     if opponent_id:
