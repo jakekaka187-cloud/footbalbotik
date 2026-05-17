@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
+BOT_USERNAME = os.getenv("BOT_USERNAME", "your_bot")  # без @, нужен для реф-ссылок
 DATABASE_URL = os.getenv("DATABASE_URL", "football_bot.db")
 
 # Game settings

@@ -386,9 +386,8 @@ async def handle_clubs_pvp_guess(message: Message, state: FSMContext, bot: Bot):
     already_tried = session.get("current_turn_tried", 0)
 
     if check_club_answer(message.text, club):
-        score = calculate_club_score(revealed)
         await update_session(room_code, status="finished", winner_id=message.from_user.id)
-        await update_user_stats(message.from_user.id, won=True, score=score)
+        await update_user_stats(message.from_user.id, won=True, score=0)
         await update_user_stats(opponent_id, won=False, score=0)
 
         await state.clear()
@@ -402,8 +401,7 @@ async def handle_clubs_pvp_guess(message: Message, state: FSMContext, bot: Bot):
         await message.answer(
             "🏆 *ТЫ ПОБЕДИЛ!*\n\n"
             "🏟️ Это был *" + club['name'] + "* " + club['emoji'] + "\n"
-            "🏆 " + club['league'] + "\n\n"
-            "💰 *+" + str(score) + " очков!*",
+            "🏆 " + club['league'],
             parse_mode="Markdown",
             reply_markup=play_again_clubs_pvp_keyboard()
         )

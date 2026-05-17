@@ -138,13 +138,13 @@ def pvp_opponent_turn_text(clubs_so_far: str, clubs_shown: int) -> str:
     )
 
 
-def pvp_win_text(footballer: dict, score: int) -> str:
+def pvp_win_text(footballer: dict, score: int = 0) -> str:
     return (
         f"🏆 *ТЫ ПОБЕДИЛ!*\n\n"
         f"⚽ Это был *{footballer['name']}*\n"
         f"{footballer['nationality']} | {footballer['position']}\n\n"
-        f"🔥 *+{score} очков!*\n"
-        f"Красавчик, показал класс! 💪"
+        f"Красавчик, показал класс! 💪\n"
+        f"_(очки за PvP не начисляются — защита от фарма)_"
     )
 
 

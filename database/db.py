@@ -50,10 +50,12 @@ async def init_db():
                 played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # Add competition columns if they don't exist yet (safe for existing DBs)
+        # Add new columns if they don't exist yet (safe for existing DBs)
         for col_def in [
             "ALTER TABLE users ADD COLUMN season_score INTEGER DEFAULT 0",
             "ALTER TABLE users ADD COLUMN season_wins INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN referred_by INTEGER DEFAULT NULL",
+            "ALTER TABLE users ADD COLUMN referral_count INTEGER DEFAULT 0",
         ]:
             try:
                 await db.execute(col_def)
@@ -139,6 +141,48 @@ async def get_leaderboard(limit: int = 10) -> list:
             LIMIT ?
         """, (limit,))
         return [dict(row) for row in await cursor.fetchall()]
+
+
+async def apply_referral(new_user_id: int, referrer_id: int) -> bool:
+    """
+    Called once when a new user joins via ref link.
+    Returns True if bonus was applied, False if referral already exists or self-referral.
+    """
+    if new_user_id == referrer_id:
+        return False
+    async with aiosqlite.connect(DB_PATH) as db:
+        # Check that new_user has no referrer yet
+        cursor = await db.execute(
+            "SELECT referred_by FROM users WHERE telegram_id = ?", (new_user_id,)
+        )
+        row = await cursor.fetchone()
+        if not row or row[0] is not None:
+            return False
+        # Mark new user as referred
+        await db.execute(
+            "UPDATE users SET referred_by = ? WHERE telegram_id = ?",
+            (referrer_id, new_user_id)
+        )
+        # Give referrer 1500 pts (season + total) and increment referral count
+        await db.execute("""
+            UPDATE users SET
+                total_score = total_score + 1500,
+                season_score = season_score + 1500,
+                referral_count = referral_count + 1
+            WHERE telegram_id = ?
+        """, (referrer_id,))
+        await db.commit()
+        return True
+
+
+async def get_referral_stats(telegram_id: int) -> dict:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT referral_count FROM users WHERE telegram_id = ?", (telegram_id,)
+        )
+        row = await cursor.fetchone()
+        return dict(row) if row else {"referral_count": 0}
 
 
 async def get_competition_leaderboard(limit: int = 10) -> list:

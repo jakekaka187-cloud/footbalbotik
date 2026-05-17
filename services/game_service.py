@@ -183,14 +183,13 @@ async def process_pvp_guess(room_code: str, user_id: int, guess: str) -> dict:
 
     # Правильный ответ — победа
     if check_answer(guess, footballer):
-        score = calculate_score(clubs_shown)
         loser_id = session["player2_id"] if user_id == session["player1_id"] else session["player1_id"]
         await update_session(room_code.upper(), status="finished", winner_id=user_id)
-        await update_user_stats(user_id, won=True, score=score)
+        await update_user_stats(user_id, won=True, score=0)
         await update_user_stats(loser_id, won=False, score=0)
         return {
             "correct": True,
-            "score": score,
+            "score": 0,
             "winner_id": user_id,
             "loser_id": loser_id,
             "footballer": footballer,

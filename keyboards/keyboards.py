@@ -16,6 +16,9 @@ def main_menu_keyboard() -> ReplyKeyboardMarkup:
         KeyboardButton(text="📊 Мой профиль"),
         KeyboardButton(text="🏆 Топ игроков"),
     )
+    builder.row(
+        KeyboardButton(text="🔗 Пригласить друга"),
+    )
     return builder.as_markup(resize_keyboard=True)
 
 
