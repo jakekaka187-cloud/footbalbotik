@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 
 from config import BOT_USERNAME, ADMIN_ID
 from database.db import get_or_create_user, apply_referral, get_referral_stats, get_bot_stats, update_user_stats, save_webapp_play
-from keyboards.keyboards import main_menu_keyboard, back_to_menu_keyboard
+from keyboards.keyboards import main_menu_keyboard, back_to_menu_keyboard, ref_webapp_keyboard
 from utils.messages import welcome_text, MENU_TEXT
 from utils.check_subscription import check_subscription, is_subscribed
 
@@ -75,11 +75,13 @@ async def cmd_ref(message: Message):
     await message.answer(
         f"🔗 *Твоя реферальная ссылка:*\n\n"
         f"`{link}`\n\n"
-        f"За каждого нового друга, который зарегистрируется по ней, "
-        f"ты получаешь *+{REFERRAL_BONUS} очков* в конкурс!\n\n"
+        f"🎮 Зови друзей играть в *Мини-игры ЧМ 2026*!\n"
+        f"Угадывай легенд, сборные и чемпионов мирового первенства!\n\n"
+        f"За каждого нового друга ты получаешь *+{REFERRAL_BONUS} очков* в конкурс!\n\n"
         f"👥 Приглашено друзей: *{count}*\n"
         f"💰 Заработано на рефералах: *{count * REFERRAL_BONUS} очков*",
         parse_mode="Markdown",
+        reply_markup=ref_webapp_keyboard(),
     )
 
 

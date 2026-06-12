@@ -297,6 +297,23 @@ async def save_game_history(user_id: int, footballer_id: int, clubs_used: int,
         await db.commit()
 
 
+async def get_webapp_leaderboard(limit: int = 10) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("""
+            SELECT u.username, u.first_name,
+                   COUNT(gh.id) as sessions,
+                   COALESCE(SUM(gh.score), 0) as webapp_score
+            FROM users u
+            JOIN game_history gh ON u.telegram_id = gh.user_id
+            WHERE gh.mode LIKE 'webapp_%'
+            GROUP BY u.telegram_id
+            ORDER BY webapp_score DESC
+            LIMIT ?
+        """, (limit,))
+        return [dict(row) for row in await cursor.fetchall()]
+
+
 async def save_webapp_play(user_id: int, game: str, score: int):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""

@@ -90,14 +90,24 @@ def play_again_transfer_keyboard() -> InlineKeyboardMarkup:
 
 def leaderboard_keyboard(mode: str = "season") -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    tabs = []
+    if mode != "season":
+        tabs.append(InlineKeyboardButton(text="🏆 Конкурс", callback_data="leaderboard_season"))
+    if mode != "alltime":
+        tabs.append(InlineKeyboardButton(text="🕐 Все времена", callback_data="leaderboard_alltime"))
+    if mode != "webapp":
+        tabs.append(InlineKeyboardButton(text="🎮 Мини-игры ЧМ", callback_data="leaderboard_webapp"))
+    builder.row(*tabs)
     builder.row(
         InlineKeyboardButton(text="📊 Таблица очков", callback_data="scoring_rules"),
-        InlineKeyboardButton(
-            text="🕐 Все времена" if mode == "season" else "🏆 Конкурс",
-            callback_data="leaderboard_alltime" if mode == "season" else "leaderboard_season",
-        ),
+        InlineKeyboardButton(text="🏠 В меню", callback_data="main_menu"),
     )
-    builder.row(InlineKeyboardButton(text="🏠 В меню", callback_data="main_menu"))
+    return builder.as_markup()
+
+
+def ref_webapp_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.row(InlineKeyboardButton(text="🎮 Открыть Мини-игры ЧМ 2026", web_app=WebAppInfo(url=WEBAPP_URL)))
     return builder.as_markup()
 
 
