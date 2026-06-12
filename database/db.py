@@ -56,6 +56,7 @@ async def init_db():
             "ALTER TABLE users ADD COLUMN season_wins INTEGER DEFAULT 0",
             "ALTER TABLE users ADD COLUMN referred_by INTEGER DEFAULT NULL",
             "ALTER TABLE users ADD COLUMN referral_count INTEGER DEFAULT 0",
+            "ALTER TABLE game_history ADD COLUMN mode TEXT DEFAULT 'bot'",
         ]:
             try:
                 await db.execute(col_def)
@@ -189,6 +190,15 @@ async def get_bot_stats() -> dict:
         total_referrals = (await (await db.execute(
             "SELECT COUNT(*) FROM users WHERE referred_by IS NOT NULL"
         )).fetchone())[0]
+        webapp_players = (await (await db.execute(
+            "SELECT COUNT(DISTINCT user_id) FROM game_history WHERE mode LIKE 'webapp_%'"
+        )).fetchone())[0]
+        webapp_games = (await (await db.execute(
+            "SELECT COUNT(*) FROM game_history WHERE mode LIKE 'webapp_%'"
+        )).fetchone())[0]
+        webapp_today = (await (await db.execute(
+            "SELECT COUNT(DISTINCT user_id) FROM game_history WHERE mode LIKE 'webapp_%' AND played_at >= date('now')"
+        )).fetchone())[0]
         top = await (await db.execute(
             "SELECT first_name, username, season_score, season_wins FROM users ORDER BY season_score DESC LIMIT 3"
         )).fetchall()
@@ -198,6 +208,9 @@ async def get_bot_stats() -> dict:
             "active_week": active_week,
             "total_games": total_games,
             "total_referrals": total_referrals,
+            "webapp_players": webapp_players,
+            "webapp_games": webapp_games,
+            "webapp_today": webapp_today,
             "top3": [dict(r) for r in top],
         }
 
@@ -281,4 +294,13 @@ async def save_game_history(user_id: int, footballer_id: int, clubs_used: int,
             INSERT INTO game_history (user_id, footballer_id, clubs_used, score, result)
             VALUES (?, ?, ?, ?, ?)
         """, (user_id, footballer_id, clubs_used, score, result))
+        await db.commit()
+
+
+async def save_webapp_play(user_id: int, game: str, score: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO game_history (user_id, footballer_id, clubs_used, score, result, mode)
+            VALUES (?, 0, 0, ?, 'win', ?)
+        """, (user_id, score, f"webapp_{game}"))
         await db.commit()

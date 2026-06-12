@@ -6,7 +6,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from config import BOT_USERNAME, ADMIN_ID
-from database.db import get_or_create_user, apply_referral, get_referral_stats, get_bot_stats, update_user_stats
+from database.db import get_or_create_user, apply_referral, get_referral_stats, get_bot_stats, update_user_stats, save_webapp_play
 from keyboards.keyboards import main_menu_keyboard, back_to_menu_keyboard
 from utils.messages import welcome_text, MENU_TEXT
 from utils.check_subscription import check_subscription, is_subscribed
@@ -104,6 +104,10 @@ async def cmd_stats(message: Message):
         f"📅 Активных за неделю: *{s['active_week']}*\n"
         f"🎮 Всего игр сыграно: *{s['total_games']}*\n"
         f"🔗 Пришли по реф-ссылке: *{s['total_referrals']}*\n\n"
+        f"🏟 *Мини-игры ЧМ 2026:*\n"
+        f"👤 Уникальных игроков: *{s['webapp_players']}*\n"
+        f"🎯 Сессий сыграно: *{s['webapp_games']}*\n"
+        f"📆 Играли сегодня: *{s['webapp_today']}*\n\n"
         f"🏆 *Топ конкурса:*\n{top_text}",
         parse_mode="Markdown",
     )
@@ -183,6 +187,7 @@ async def handle_webapp_data(message: Message):
 
     if score > 0:
         await update_user_stats(message.from_user.id, won=won, score=score)
+        await save_webapp_play(message.from_user.id, game, score)
 
     game_label = GAME_NAMES.get(game, "Мини-игра")
     if score > 0:
