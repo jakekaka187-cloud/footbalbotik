@@ -2,13 +2,11 @@ const NationalGame = (() => {
   let current = null;
   let playersShown = 3;
   let finished = false;
-
   const SCORE_MAP = { 3: 100, 4: 80, 5: 60, 6: 50, 7: 40, 8: 30, 9: 20, 10: 15, 11: 10 };
   const MAX_PLAYERS = 11;
 
   function pick() {
-    const idx = Math.floor(Math.random() * NATIONAL_TEAMS.length);
-    return NATIONAL_TEAMS[idx];
+    return NATIONAL_TEAMS[Math.floor(Math.random() * NATIONAL_TEAMS.length)];
   }
 
   function checkAnswer(input, team) {
@@ -22,25 +20,24 @@ const NationalGame = (() => {
 
   function buildPlayersHTML(team, n) {
     const shown = team.players.slice(0, n);
-    let html = `<div class="players-list">`;
-    shown.forEach((p, i) => {
-      html += `<div class="player-row">`;
-      html += `<span class="player-num">${i + 1}.</span>`;
-      html += `<span class="player-club">${p.emoji} ${p.club}</span>`;
-      html += `<span class="player-pos pos-${p.pos}">${p.pos}</span>`;
-      html += `</div>`;
-    });
-    const remaining = MAX_PLAYERS - n;
-    if (remaining > 0) {
-      html += `<div class="players-remaining">+ ещё ${remaining} игроков</div>`;
+    let html = shown.map((p, i) =>
+      `<div class="clue-card revealed">
+        <span class="clue-icon">${p.emoji}</span>
+        <span class="clue-text">${p.club}<span class="pos-badge pos-${p.pos}">${p.pos}</span></span>
+      </div>`
+    ).join('');
+    const rem = MAX_PLAYERS - n;
+    if (rem > 0) {
+      html += `<div class="clue-card locked">
+        <span class="clue-icon">🔒</span>
+        <span class="clue-text">+${rem} игроков скрыто</span>
+      </div>`;
     }
-    html += `</div>`;
     return html;
   }
 
-  function getScore(n) {
-    return SCORE_MAP[n] || 10;
-  }
+  function getScore(n) { return SCORE_MAP[n] || 10; }
+  function hintsLeft() { return MAX_PLAYERS - playersShown; }
 
   function start() {
     current = pick();
@@ -50,15 +47,13 @@ const NationalGame = (() => {
   }
 
   function render() {
-    const canMore = playersShown < MAX_PLAYERS;
-    const score = getScore(playersShown);
     return {
       title: '🌍 Угадай сборную',
-      scoreLabel: `${score} очков за правильный ответ`,
+      scoreLabel: `${getScore(playersShown)} очков`,
       bodyHTML: buildPlayersHTML(current, playersShown),
       placeholder: 'Название страны...',
-      canHint: canMore,
-      hintLabel: canMore ? `👤 +1 игрок (-${score - getScore(playersShown + 1)} очков)` : '👤 Все игроки открыты',
+      canHint: playersShown < MAX_PLAYERS,
+      hintsLeft: hintsLeft(),
     };
   }
 

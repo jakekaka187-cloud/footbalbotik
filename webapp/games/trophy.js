@@ -2,12 +2,10 @@ const TrophyGame = (() => {
   let current = null;
   let roundsShown = 1;
   let finished = false;
-
   const SCORE_MAP = { 1: 100, 2: 70, 3: 40, 4: 20 };
 
   function pick() {
-    const idx = Math.floor(Math.random() * TROPHY_PATHS.length);
-    return TROPHY_PATHS[idx];
+    return TROPHY_PATHS[Math.floor(Math.random() * TROPHY_PATHS.length)];
   }
 
   function checkAnswer(input, entry) {
@@ -20,32 +18,28 @@ const TrophyGame = (() => {
   }
 
   function buildPathHTML(entry, n) {
-    const shown = entry.path.slice(0, n);
-    const total = entry.path.length;
-    let html = `<div class="trophy-header">`;
-    html += `<span class="trophy-year">🗓 ЧМ ${entry.year}</span>`;
-    html += `</div>`;
-    html += `<div class="path-list">`;
-    shown.forEach(step => {
-      html += `<div class="path-row">`;
-      html += `<span class="path-result">${step.result}</span>`;
-      html += `<div class="path-info">`;
-      html += `<span class="path-round">${step.round}</span>`;
-      html += `<span class="path-score">vs ${step.opponent} — <b>${step.score}</b></span>`;
-      html += `</div>`;
-      html += `</div>`;
-    });
-    const remaining = total - n;
-    if (remaining > 0) {
-      html += `<div class="path-remaining">🔒 Ещё ${remaining} ${remaining === 1 ? 'раунд' : 'раунда'} скрыто</div>`;
+    let html = `<div class="trophy-year-badge">🗓️ ЧМ ${entry.year}</div>`;
+    html += entry.path.slice(0, n).map(step =>
+      `<div class="clue-card revealed">
+        <span class="clue-icon">${step.result}</span>
+        <div class="clue-info">
+          <div class="clue-round">${step.round}</div>
+          <div class="clue-text">vs ${step.opponent} — <b>${step.score}</b></div>
+        </div>
+      </div>`
+    ).join('');
+    const rem = entry.path.length - n;
+    if (rem > 0) {
+      html += `<div class="clue-card locked">
+        <span class="clue-icon">🔒</span>
+        <span class="clue-text">${rem} ${rem === 1 ? 'раунд' : 'раунда'} ещё скрыто</span>
+      </div>`;
     }
-    html += `</div>`;
     return html;
   }
 
-  function getScore(n) {
-    return SCORE_MAP[n] || 20;
-  }
+  function getScore(n) { return SCORE_MAP[n] || 20; }
+  function hintsLeft() { return current.path.length - roundsShown; }
 
   function start() {
     current = pick();
@@ -55,16 +49,13 @@ const TrophyGame = (() => {
   }
 
   function render() {
-    const total = current.path.length;
-    const canMore = roundsShown < total;
-    const score = getScore(roundsShown);
     return {
       title: '🛤️ Путь к трофею',
-      scoreLabel: `${score} очков за правильный ответ`,
+      scoreLabel: `${getScore(roundsShown)} очков`,
       bodyHTML: buildPathHTML(current, roundsShown),
       placeholder: 'Название сборной...',
-      canHint: canMore,
-      hintLabel: canMore ? `🔍 Следующий раунд (-${score - getScore(roundsShown + 1)} очков)` : '🔍 Все раунды открыты',
+      canHint: roundsShown < current.path.length,
+      hintsLeft: hintsLeft(),
     };
   }
 

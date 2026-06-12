@@ -6,47 +6,43 @@ const LegendsGame = (() => {
   const MAX_HINTS = 3;
 
   function pick() {
-    const idx = Math.floor(Math.random() * LEGENDS.length);
-    return LEGENDS[idx];
+    return LEGENDS[Math.floor(Math.random() * LEGENDS.length)];
   }
 
   function checkAnswer(input, legend) {
     const s = input.toLowerCase().trim();
     if (!s || s.length < 2) return false;
-    const nameParts = legend.name.toLowerCase().split(' ');
     if (s === legend.name.toLowerCase()) return true;
-    if (nameParts.some(p => p.length >= 3 && p === s)) return true;
+    const parts = legend.name.toLowerCase().split(' ');
+    if (parts.some(p => p.length >= 3 && p === s)) return true;
     if (legend.aliases.some(a => a === s)) return true;
-    const full = legend.name.toLowerCase();
-    if (s.length >= 4 && full.includes(s)) return true;
+    if (s.length >= 4 && legend.name.toLowerCase().includes(s)) return true;
     return false;
   }
 
   function buildHintHTML(legend, n) {
-    let html = `<div class="hint-block">`;
-    html += `<div class="hint-row hint-visible">`;
-    html += `<span class="hint-label">Подсказка 1</span>`;
-    html += `<span class="hint-value">ЧМ ${legend.year} ${legend.flag} ${legend.country}</span>`;
-    html += `</div>`;
-    if (n >= 2) {
-      html += `<div class="hint-row hint-visible">`;
-      html += `<span class="hint-label">Подсказка 2</span>`;
-      html += `<span class="hint-value">⚽ Голов на турнире: <b>${legend.goals}</b></span>`;
-      html += `</div>`;
-    } else {
-      html += `<div class="hint-row hint-locked"><span class="hint-label">Подсказка 2</span><span class="hint-value">🔒 Откроется после неверного ответа</span></div>`;
-    }
-    if (n >= 3) {
-      html += `<div class="hint-row hint-visible">`;
-      html += `<span class="hint-label">Подсказка 3</span>`;
-      html += `<span class="hint-value">💬 ${legend.hint3}</span>`;
-      html += `</div>`;
-    } else {
-      html += `<div class="hint-row hint-locked"><span class="hint-label">Подсказка 3</span><span class="hint-value">🔒 Откроется после неверного ответа</span></div>`;
-    }
-    html += `</div>`;
-    return html;
+    const clues = [
+      { icon: '📅', text: `Чемпион ЧМ ${legend.year} — ${legend.flag} ${legend.country}` },
+      { icon: '⚽', text: `Забил ${legend.goals} ${plural(legend.goals)} на том турнире` },
+      { icon: '💬', text: legend.hint3 },
+    ];
+    return clues.map((c, i) => {
+      const revealed = i < n;
+      return `<div class="clue-card ${revealed ? 'revealed' : 'locked'}">
+        <span class="clue-icon">${revealed ? c.icon : '🔒'}</span>
+        <span class="clue-text">${revealed ? c.text : 'Подсказка ' + (i + 1)}</span>
+      </div>`;
+    }).join('');
   }
+
+  function plural(n) {
+    if (n === 1) return 'гол';
+    if (n >= 2 && n <= 4) return 'гола';
+    return 'голов';
+  }
+
+  function getScore() { return SCORES[hintsShown] || 30; }
+  function hintsLeft() { return MAX_HINTS - hintsShown; }
 
   function start() {
     current = pick();
@@ -56,15 +52,13 @@ const LegendsGame = (() => {
   }
 
   function render() {
-    const canHint = hintsShown < MAX_HINTS;
-    const score = SCORES[hintsShown] || 30;
     return {
       title: '🏆 Легенды ЧМ',
-      scoreLabel: `${score} очков за правильный ответ`,
+      scoreLabel: `${getScore()} очков`,
       bodyHTML: buildHintHTML(current, hintsShown),
       placeholder: 'Введи имя легенды...',
-      canHint,
-      hintLabel: canHint ? `💡 Подсказка (-${score - (SCORES[hintsShown + 1] || 30)} очков)` : '💡 Подсказок больше нет',
+      canHint: hintsShown < MAX_HINTS,
+      hintsLeft: hintsLeft(),
     };
   }
 
@@ -78,7 +72,7 @@ const LegendsGame = (() => {
     const correct = checkAnswer(input, current);
     if (correct) {
       finished = true;
-      return { correct: true, score: SCORES[hintsShown] || 30, name: current.name, hint3: current.hint3, year: current.year, flag: current.flag, country: current.country };
+      return { correct: true, score: getScore(), name: current.name, hint3: current.hint3, year: current.year, flag: current.flag, country: current.country };
     }
     if (hintsShown < MAX_HINTS) {
       hintsShown++;

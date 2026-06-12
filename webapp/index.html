@@ -3,66 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0a0118">
+  <meta name="theme-color" content="#090915">
   <title>ЧМ 2026 Мини-игры</title>
   <link rel="stylesheet" href="/webapp/styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-  <!-- ══════════════ MAIN SCREEN ══════════════ -->
-  <div id="screen-main" class="screen">
-    <div class="main-header">
-      <span class="trophy-emoji">🏆</span>
-      <h1>ЧМ 2026</h1>
-      <p>Мини-игры</p>
-    </div>
+<!-- ══════════════ MAIN SCREEN ══════════════ -->
+<div id="screen-main" class="screen">
 
-    <div class="games-grid">
+  <div class="hero">
+    <span class="trophy-big">🏆</span>
+    <h1 class="hero-title">ЧМ 2026</h1>
+    <p class="hero-sub">Мини-игры</p>
+    <div class="hero-flags">
+      <div class="flag-item"><span class="fi">🇺🇸</span><span class="fc">USA</span></div>
+      <div class="flag-item"><span class="fi">🇨🇦</span><span class="fc">CAN</span></div>
+      <div class="flag-item"><span class="fi">🇲🇽</span><span class="fc">MEX</span></div>
+    </div>
+    <span class="hero-dates">11 июня — 19 июля 2026</span>
+  </div>
+
+  <div class="games-section">
+    <div class="games-row">
       <div class="game-card card-legends" onclick="showGame('legends')">
         <span class="card-icon">🏆</span>
-        <div class="card-title">Легенды ЧМ</div>
+        <div class="card-title">ЛЕГЕНДЫ ЧМ</div>
         <div class="card-desc">Угадай легенду по подсказкам</div>
       </div>
-
       <div class="game-card card-national" onclick="showGame('national')">
         <span class="card-icon">🌍</span>
-        <div class="card-title">Угадай сборную</div>
+        <div class="card-title">УГАДАЙ СБОРНУЮ</div>
         <div class="card-desc">По составу клубов</div>
       </div>
-
-      <div class="game-card card-trophy" onclick="showGame('trophy')">
-        <span class="card-icon">🛤️</span>
-        <div class="card-text">
-          <div class="card-title">Путь к трофею</div>
-          <div class="card-desc">Узнай чемпиона по матчам на турнире</div>
-        </div>
+    </div>
+    <div class="game-card card-trophy" onclick="showGame('trophy')">
+      <span class="card-icon">🛤️</span>
+      <div>
+        <div class="card-title">ПУТЬ К ТРОФЕЮ</div>
+        <div class="card-desc">Узнай чемпиона по матчам на турнире</div>
       </div>
     </div>
+  </div>
 
-    <div class="bottom-bar">
-      <span class="user-name" id="user-name">👋 Игрок</span>
-      <span class="score-tag">⚽ Зарабатывай очки!</span>
+  <nav class="bottom-nav">
+    <div class="nav-item active" data-screen="main" onclick="showScreen('main')">
+      <span class="nav-icon">🏠</span><span class="nav-label">Главная</span>
     </div>
-  </div>
+    <div class="nav-item" onclick="showToast('Скоро!')">
+      <span class="nav-icon">🏆</span><span class="nav-label">Турнир</span>
+    </div>
+    <div class="nav-item" data-screen="main" onclick="showScreen('main')">
+      <span class="nav-icon">🎮</span><span class="nav-label">Игры</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Скоро!')">
+      <span class="nav-icon">📊</span><span class="nav-label">Таблица</span>
+    </div>
+    <div class="nav-item" onclick="showToast('Скоро!')">
+      <span class="nav-icon">👤</span><span class="nav-label">Профиль</span>
+    </div>
+  </nav>
+</div>
 
-  <!-- ══════════════ GAME SCREEN ══════════════ -->
-  <div id="screen-game" class="screen">
-    <!-- Filled dynamically by app.js -->
-  </div>
+<!-- ══════════════ GAME SCREEN ══════════════ -->
+<div id="screen-game" class="screen"></div>
 
-  <!-- ══════════════ RESULT SCREEN ══════════════ -->
-  <div id="screen-result" class="screen">
-    <!-- Filled dynamically by app.js -->
-  </div>
+<!-- ══════════════ RESULT SCREEN ══════════════ -->
+<div id="screen-result" class="screen"></div>
 
-  <!-- Data -->
-  <script src="/webapp/data/legends_data.js"></script>
-  <script src="/webapp/data/national_data.js"></script>
-  <script src="/webapp/data/trophy_data.js"></script>
-  <script src="/webapp/games/legends.js"></script>
-  <script src="/webapp/games/national.js"></script>
-  <script src="/webapp/games/trophy.js"></script>
-  <script src="/webapp/app.js"></script>
+<script src="/webapp/data/legends_data.js"></script>
+<script src="/webapp/data/national_data.js"></script>
+<script src="/webapp/data/trophy_data.js"></script>
+<script src="/webapp/games/legends.js"></script>
+<script src="/webapp/games/national.js"></script>
+<script src="/webapp/games/trophy.js"></script>
+<script src="/webapp/app.js"></script>
 </body>
 </html>
