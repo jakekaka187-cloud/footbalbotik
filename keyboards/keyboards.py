@@ -1,9 +1,14 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
+
+from config import WEBAPP_URL
 
 
 def main_menu_keyboard() -> ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
+    builder.row(
+        KeyboardButton(text="🎮 Мини-игры ЧМ 2026", web_app=WebAppInfo(url=WEBAPP_URL)),
+    )
     builder.row(
         KeyboardButton(text="⚽ Угадай карьеру соло"),
         KeyboardButton(text="👥 Угадай карьеру с другом"),

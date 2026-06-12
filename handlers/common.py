@@ -1,10 +1,12 @@
+import json
+
 from aiogram import Router, F, Bot
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from config import BOT_USERNAME, ADMIN_ID
-from database.db import get_or_create_user, apply_referral, get_referral_stats, get_bot_stats
+from database.db import get_or_create_user, apply_referral, get_referral_stats, get_bot_stats, update_user_stats
 from keyboards.keyboards import main_menu_keyboard, back_to_menu_keyboard
 from utils.messages import welcome_text, MENU_TEXT
 from utils.check_subscription import check_subscription, is_subscribed
@@ -154,3 +156,47 @@ async def cb_main_menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.message.edit_text(MENU_TEXT, parse_mode="Markdown")
     await callback.message.answer("👆 Выбирай!", reply_markup=main_menu_keyboard())
     await callback.answer()
+
+
+GAME_NAMES = {
+    "legends": "🏆 Легенды ЧМ",
+    "national": "🌍 Угадай сборную",
+    "trophy": "🛤️ Путь к трофею",
+}
+
+
+@router.message(F.web_app_data)
+async def handle_webapp_data(message: Message):
+    try:
+        data = json.loads(message.web_app_data.data)
+    except (json.JSONDecodeError, AttributeError):
+        return
+
+    game = data.get("game", "")
+    raw_score = data.get("score", 0)
+    won = bool(data.get("won", False))
+
+    try:
+        score = max(0, min(int(raw_score), 500))
+    except (TypeError, ValueError):
+        score = 0
+
+    if score > 0:
+        await update_user_stats(message.from_user.id, won=won, score=score)
+
+    game_label = GAME_NAMES.get(game, "Мини-игра")
+    if score > 0:
+        await message.answer(
+            f"🎮 *{game_label}*\n\n"
+            f"✅ Сессия завершена!\n"
+            f"💰 Начислено *+{score} очков*\n\n"
+            f"Продолжай играть и побеждай! 🏆",
+            parse_mode="Markdown",
+            reply_markup=main_menu_keyboard(),
+        )
+    else:
+        await message.answer(
+            f"🎮 *{game_label}*\n\nПопробуй ещё раз! 💪",
+            parse_mode="Markdown",
+            reply_markup=main_menu_keyboard(),
+        )

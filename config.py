@@ -7,6 +7,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 BOT_USERNAME = os.getenv("BOT_USERNAME", "your_bot")  # без @, нужен для реф-ссылок
 ADMIN_ID = 724703528
 DATABASE_URL = os.getenv("DATABASE_URL", "football_bot.db")
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://footballbot.fly.dev/webapp")
 
 # Game settings
 MAX_HINTS_BEFORE_PENALTY = 3       # After 3 clubs shown — reduced points
