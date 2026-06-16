@@ -314,6 +314,13 @@ async def get_webapp_leaderboard(limit: int = 10) -> list:
         return [dict(row) for row in await cursor.fetchall()]
 
 
+async def get_all_user_ids() -> list[int]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT telegram_id FROM users")
+        rows = await cursor.fetchall()
+        return [row[0] for row in rows]
+
+
 async def save_webapp_play(user_id: int, game: str, score: int):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""

@@ -6,7 +6,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from config import BOT_USERNAME, ADMIN_ID
-from database.db import get_or_create_user, apply_referral, get_referral_stats, get_bot_stats, update_user_stats, save_webapp_play
+from database.db import get_or_create_user, apply_referral, get_referral_stats, get_bot_stats, update_user_stats, save_webapp_play, get_all_user_ids
 from keyboards.keyboards import main_menu_keyboard, back_to_menu_keyboard, ref_webapp_keyboard
 from utils.messages import welcome_text, MENU_TEXT
 from utils.check_subscription import check_subscription, is_subscribed
@@ -111,6 +111,31 @@ async def cmd_stats(message: Message):
         f"🎯 Сессий сыграно: *{s['webapp_games']}*\n"
         f"📆 Играли сегодня: *{s['webapp_today']}*\n\n"
         f"🏆 *Топ конкурса:*\n{top_text}",
+        parse_mode="Markdown",
+    )
+
+
+@router.message(Command("broadcast"))
+async def cmd_broadcast(message: Message, bot: Bot):
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    text = message.text.removeprefix("/broadcast").strip()
+    if not text:
+        await message.answer("Использование: /broadcast <текст сообщения>")
+        return
+
+    user_ids = await get_all_user_ids()
+    sent, failed = 0, 0
+    for uid in user_ids:
+        try:
+            await bot.send_message(uid, text, parse_mode="Markdown")
+            sent += 1
+        except Exception:
+            failed += 1
+
+    await message.answer(
+        f"✅ Рассылка завершена\n\n📨 Отправлено: *{sent}*\n❌ Не доставлено: *{failed}*",
         parse_mode="Markdown",
     )
 
