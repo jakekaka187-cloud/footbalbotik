@@ -120,16 +120,31 @@ async def cmd_broadcast(message: Message, bot: Bot):
     if message.from_user.id != ADMIN_ID:
         return
 
+    reply = message.reply_to_message
     text = message.text.removeprefix("/broadcast").strip()
-    if not text:
-        await message.answer("Использование: /broadcast <текст сообщения>")
+
+    if not reply and not text:
+        await message.answer(
+            "Два способа рассылки:\n\n"
+            "1️⃣ Ответь (`Reply`) на любое сообщение командой /broadcast — разошлёт его как есть (фото, текст, ссылки)\n"
+            "2️⃣ /broadcast <текст> — разошлёт простой текст",
+            parse_mode="Markdown",
+        )
         return
 
     user_ids = await get_all_user_ids()
     sent, failed = 0, 0
+
     for uid in user_ids:
         try:
-            await bot.send_message(uid, text, parse_mode="Markdown")
+            if reply:
+                await bot.copy_message(
+                    chat_id=uid,
+                    from_chat_id=reply.chat.id,
+                    message_id=reply.message_id,
+                )
+            else:
+                await bot.send_message(uid, text, parse_mode="Markdown")
             sent += 1
         except Exception:
             failed += 1
