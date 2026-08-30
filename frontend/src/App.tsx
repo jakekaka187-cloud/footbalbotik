@@ -45,10 +45,24 @@ export default function App() {
           return
         } catch (e) {
           if (e instanceof ApiError && e.status === 409) {
-            // Probably already a participant (e.g. creator reopening their own invite link)
-            setSessionId(roomCode)
-            setView('draft')
-            return
+            // Already a participant (e.g. creator reopening their own invite link) —
+            // check the room's actual status rather than assuming it's playable yet.
+            try {
+              const state = await api.getState(roomCode)
+              setSessionId(roomCode)
+              if (state.status === 'waiting') {
+                enterPvpLobby({
+                  session_id: roomCode, mode: 'pvp', status: 'waiting', room_code: roomCode,
+                  invite_link: state.invite_link ?? '', expires_at: '',
+                })
+              } else {
+                setView('draft')
+              }
+              return
+            } catch (e2) {
+              fail(e2 instanceof ApiError ? e2.message : 'Не удалось открыть комнату')
+              return
+            }
           }
           fail(e instanceof ApiError ? e.message : 'Не удалось присоединиться к комнате')
         }
@@ -85,24 +99,28 @@ export default function App() {
     }
   }
 
+  function enterPvpLobby(room: CreatePvpResponse) {
+    setSessionId(room.session_id)
+    setPvpRoom(room)
+    setView('pvpLobby')
+    lobbyPoll.current = window.setInterval(async () => {
+      try {
+        const state = await api.getState(room.session_id)
+        if (state.status === 'active') {
+          stopLobbyPoll()
+          setView('draft')
+        }
+      } catch {
+        // keep polling silently
+      }
+    }, 2000)
+  }
+
   async function startPvp() {
     setBusy(true)
     try {
       const room = await api.createPvp()
-      setSessionId(room.session_id)
-      setPvpRoom(room)
-      setView('pvpLobby')
-      lobbyPoll.current = window.setInterval(async () => {
-        try {
-          const state = await api.getState(room.session_id)
-          if (state.status === 'active') {
-            stopLobbyPoll()
-            setView('draft')
-          }
-        } catch {
-          // keep polling silently
-        }
-      }, 2000)
+      enterPvpLobby(room)
     } catch (e) {
       fail(e instanceof ApiError ? e.message : 'Не удалось создать комнату')
     } finally {

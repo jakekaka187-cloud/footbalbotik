@@ -138,6 +138,9 @@ async def get_session_state(session_id: str, requester_id: int) -> dict:
         "me": await _build_participant_view(session_id, me, reveal_self=True) if me else None,
         "opponent": None,
     }
+    if session["mode"] == "pvp" and session["status"] == "waiting":
+        from config import BOT_USERNAME, WEBAPP_SHORT_NAME
+        result["invite_link"] = f"https://t.me/{BOT_USERNAME}/{WEBAPP_SHORT_NAME}?startapp={session_id}"
     if opponent:
         reveal_opponent = session["status"] == "finished"
         opp_view = await _build_participant_view(session_id, opponent, reveal_self=reveal_opponent)

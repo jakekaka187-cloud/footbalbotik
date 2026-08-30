@@ -65,6 +65,7 @@ export interface SessionState {
   slots: Slot[]
   me: ParticipantView | null
   opponent: ParticipantView | null
+  invite_link?: string
 }
 
 export interface RevealResponse {
