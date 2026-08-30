@@ -319,6 +319,106 @@ button {
   color: var(--text-dim);
 }
 
+/* --- Formation pitch (result screen) --- */
+.pitch-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pitch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 0 2px;
+}
+
+.pitch-rating {
+  background: var(--accent);
+  color: #06281d;
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.pitch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    to bottom,
+    #2c9650 0,
+    #2c9650 10%,
+    #34a558 10%,
+    #34a558 20%
+  );
+  border: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.pitch-circle {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  width: 32%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.pitch-player {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 66px;
+}
+
+.pitch-player-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: var(--card);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.pitch-player-avatar svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pitch-player-rating {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 0 5px;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+
+.pitch-player-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 66px;
+}
+
 .tabs {
   display: flex;
   gap: 8px;
