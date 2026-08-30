@@ -99,6 +99,52 @@ async def join_pvp_room(room_code: str, user_id: int) -> dict:
     return {"session_id": room_code, "mode": "pvp", "status": "active"}
 
 
+# ─── Rematch ─────────────────────────────────────────────────────────────────
+# In-memory only (same lifetime assumption as _session_locks) — fine for a
+# short-lived "both players tapped play again" handshake, not meant to
+# survive a process restart.
+
+_rematch_votes: dict[str, set] = {}
+_rematch_result: dict[str, str] = {}
+
+
+async def _create_matched_session(p1_id: int, p2_id: int) -> str:
+    session_id = _generate_code()
+    while await db.get_draft_session(session_id):
+        session_id = _generate_code()
+    await db.create_draft_session(session_id, mode="pvp", creator_id=p1_id, status="active")
+    await db.update_draft_session(session_id, opponent_id=p2_id)
+    await db.create_draft_participant(session_id, p1_id, seat=1)
+    await db.create_draft_participant(session_id, p2_id, seat=2)
+    return session_id
+
+
+async def request_rematch(session_id: str, user_id: int) -> dict:
+    if session_id in _rematch_result:
+        return {"status": "matched", "session_id": _rematch_result[session_id]}
+
+    session = await db.get_draft_session(session_id)
+    if not session or session["status"] != "finished":
+        raise DraftError("Игра ещё не завершена", status=409)
+    if session["mode"] != "pvp":
+        raise DraftError("Реванш доступен только для игры с другом", status=400)
+
+    participants = await db.get_draft_participants(session_id)
+    if not any(p["participant_id"] == user_id for p in participants) or len(participants) != 2:
+        raise DraftError("Нет доступа к этой сессии", status=403)
+
+    votes = _rematch_votes.setdefault(session_id, set())
+    votes.add(user_id)
+
+    other = next(p["participant_id"] for p in participants if p["participant_id"] != user_id)
+    if other in votes:
+        new_session_id = await _create_matched_session(*[p["participant_id"] for p in participants])
+        _rematch_result[session_id] = new_session_id
+        return {"status": "matched", "session_id": new_session_id}
+
+    return {"status": "waiting"}
+
+
 async def _build_participant_view(session_id: str, participant: dict, reveal_self: bool) -> dict:
     view = {
         "telegram_id": participant["participant_id"],

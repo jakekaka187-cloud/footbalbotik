@@ -159,6 +159,13 @@ async def handle_result(request: web.Request) -> web.Response:
     return web.json_response(result)
 
 
+async def handle_rematch(request: web.Request) -> web.Response:
+    tg_user = request["tg_user"]
+    session_id = request.match_info["session_id"].upper()
+    result = await draft_service.request_rematch(session_id, tg_user.id)
+    return web.json_response(result)
+
+
 async def handle_leaderboard(request: web.Request) -> web.Response:
     scope = request.query.get("scope", "season")
     limit = min(int(request.query.get("limit", 10)), 50)
@@ -191,6 +198,7 @@ def create_api_app(bot: Bot) -> web.Application:
     api.router.add_post("/draft/{session_id}/reveal", handle_reveal)
     api.router.add_post("/draft/{session_id}/decide", handle_decide)
     api.router.add_get("/draft/{session_id}/result", handle_result)
+    api.router.add_post("/draft/{session_id}/rematch", handle_rematch)
     api.router.add_get("/leaderboard", handle_leaderboard)
     return api
 

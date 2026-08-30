@@ -1,7 +1,7 @@
 import { getDevUserId, getInitData, isInsideTelegram } from './telegram'
 import type {
   ApiErrorBody, AuthResponse, CreatePvpResponse, CreateSoloResponse,
-  DecideResponse, LeaderboardResponse, ResultResponse, RevealResponse, SessionState,
+  DecideResponse, LeaderboardResponse, RematchResponse, ResultResponse, RevealResponse, SessionState,
 } from './types'
 
 export class ApiError extends Error {
@@ -47,5 +47,6 @@ export const api = {
   decide: (sessionId: string, action: 'take' | 'skip') =>
     request<DecideResponse>(`/draft/${sessionId}/decide`, { method: 'POST', body: JSON.stringify({ action }) }),
   getResult: (sessionId: string) => request<ResultResponse>(`/draft/${sessionId}/result`),
+  rematch: (sessionId: string) => request<RematchResponse>(`/draft/${sessionId}/rematch`, { method: 'POST', body: '{}' }),
   getLeaderboard: (scope: 'season' | 'alltime') => request<LeaderboardResponse>(`/leaderboard?scope=${scope}`),
 }

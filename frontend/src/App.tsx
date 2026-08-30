@@ -148,6 +148,13 @@ export default function App() {
     setView('home')
   }
 
+  function enterSession(newSessionId: string) {
+    stopLobbyPoll()
+    setPvpRoom(null)
+    setSessionId(newSessionId)
+    setView('draft')
+  }
+
   if (error) {
     return (
       <div className="screen center">
@@ -190,7 +197,7 @@ export default function App() {
       <ResultScreen
         sessionId={sessionId}
         myTelegramId={auth.user.telegram_id}
-        onPlayAgain={goHome}
+        onEnterSession={enterSession}
         onHome={goHome}
         onError={fail}
       />

@@ -116,3 +116,8 @@ export interface LeaderboardResponse {
 export interface ApiErrorBody {
   error: string
 }
+
+export interface RematchResponse {
+  status: 'waiting' | 'matched'
+  session_id?: string
+}
