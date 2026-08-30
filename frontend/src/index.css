@@ -223,28 +223,51 @@ button {
   background: linear-gradient(155deg, #eab27c, var(--bronze) 55%, #8a5127);
 }
 
+.player-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
 .player-card-rating {
   font-size: 42px;
   font-weight: 900;
   line-height: 1;
 }
 
-.player-card-position {
+.player-card-pos-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  opacity: 0.75;
+  opacity: 0.85;
+}
+
+.player-card-photo {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 14px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 16px;
 }
 
 .player-card-name {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
-  margin: 10px 0 4px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 4px;
 }
 
 .player-card-meta {
   font-size: 13px;
+  text-align: center;
   opacity: 0.8;
 }
 
@@ -257,6 +280,20 @@ button {
   border-radius: 12px;
   background: var(--bg-elevated);
   border: 1px solid var(--card-border);
+}
+
+.roster-row-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+}
+
+.roster-row-avatar svg {
+  width: 100%;
+  height: 100%;
 }
 
 .roster-row-badge {
