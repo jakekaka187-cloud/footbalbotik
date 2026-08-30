@@ -21,16 +21,8 @@ export function HomeScreen({
       </div>
 
       <div className="card stack">
-        <div className="btn-row">
-          <div>
-            <div className="subtitle">Всего очков</div>
-            <div style={{ fontSize: 20, fontWeight: 800 }}>{user.total_score}</div>
-          </div>
-          <div>
-            <div className="subtitle">Очки конкурса</div>
-            <div style={{ fontSize: 20, fontWeight: 800 }}>{user.season_score}</div>
-          </div>
-        </div>
+        <div className="subtitle">Всего очков</div>
+        <div style={{ fontSize: 20, fontWeight: 800 }}>{user.total_score}</div>
       </div>
 
       <div className="stack">

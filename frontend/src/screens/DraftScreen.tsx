@@ -4,7 +4,7 @@ import { PlayerCard } from '../components/PlayerCard'
 import { SlotProgressStrip } from '../components/SlotProgressStrip'
 import { Spinner } from '../components/Spinner'
 import { haptic } from '../telegram'
-import type { SessionState } from '../types'
+import type { DecideResponse, SessionState } from '../types'
 
 const SLOT_TITLE: Record<string, string> = {
   GK: 'Вратарь',
@@ -21,12 +21,17 @@ export function DraftScreen({ sessionId, onFinished, onError }: {
 }) {
   const [state, setState] = useState<SessionState | null>(null)
   const [busy, setBusy] = useState(false)
-  const [skipFlash, setSkipFlash] = useState<string | null>(null)
+  // When set, we're paused showing the result of the last pick — the next
+  // reveal/poll is held off until the player presses "Продолжить".
+  const [pick, setPick] = useState<DecideResponse | null>(null)
+  const nextStateRef = useRef<SessionState | null>(null)
   const busyRef = useRef(false)
+  const pausedRef = useRef(false)
 
   async function refresh() {
     try {
       const s = await api.getState(sessionId)
+      if (pausedRef.current) return
       setState(s)
       if (s.status === 'finished') {
         onFinished()
@@ -44,14 +49,14 @@ export function DraftScreen({ sessionId, onFinished, onError }: {
   useEffect(() => {
     if (!state || state.mode !== 'pvp' || state.status !== 'active') return
     const interval = setInterval(() => {
-      if (!busyRef.current) refresh()
+      if (!busyRef.current && !pausedRef.current) refresh()
     }, 1500)
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.mode, state?.status, sessionId])
 
   useEffect(() => {
-    if (!state?.me) return
+    if (!state?.me || pausedRef.current) return
     if (state.me.status === 'drafting' && !state.me.pending_candidate && !busy) {
       void reveal()
     }
@@ -81,25 +86,34 @@ export function DraftScreen({ sessionId, onFinished, onError }: {
     haptic(action === 'take' ? 'medium' : 'light')
     setBusy(true)
     busyRef.current = true
+    pausedRef.current = true
     try {
       const res = await api.decide(sessionId, action)
-      if (res.skipped_player) {
-        setSkipFlash(`${res.skipped_player.name} → ${res.committed_player.name}`)
-        setTimeout(() => setSkipFlash(null), 1600)
-      } else if (res.alt_player) {
-        setSkipFlash(`Вторым мог быть: ${res.alt_player.name} (${res.alt_player.rating})`)
-        setTimeout(() => setSkipFlash(null), 2200)
-      }
-      const s = await api.getState(sessionId)
-      setState(s)
-      if (s.status === 'finished') {
-        onFinished()
-      }
+      const freshState = await api.getState(sessionId)
+      nextStateRef.current = freshState
+      setPick(res)
     } catch (e) {
+      pausedRef.current = false
       onError(e instanceof ApiError ? e.message : 'Не удалось сделать выбор')
     } finally {
       setBusy(false)
       busyRef.current = false
+    }
+  }
+
+  function continueAfterPick() {
+    haptic('light')
+    setPick(null)
+    pausedRef.current = false
+    const fresh = nextStateRef.current
+    nextStateRef.current = null
+    if (fresh) {
+      setState(fresh)
+      if (fresh.status === 'finished') {
+        onFinished()
+      }
+    } else {
+      void refresh()
     }
   }
 
@@ -112,6 +126,33 @@ export function DraftScreen({ sessionId, onFinished, onError }: {
   }
 
   const { me, opponent, slots } = state
+
+  // Paused on "here's what you got" — show it and wait for confirmation.
+  if (pick) {
+    return (
+      <div className="screen">
+        <SlotProgressStrip slots={slots} currentIndex={me.current_slot_index} roster={me.roster} />
+        <div className="center" style={{ flex: 'none', gap: 4 }}>
+          <p className="subtitle">{SLOT_TITLE[pick.slot]}</p>
+          {pick.skipped_player ? (
+            <p className="subtitle">Вместо {pick.skipped_player.name} тебе достался:</p>
+          ) : (
+            <p className="subtitle">Ты выбрал:</p>
+          )}
+        </div>
+        <PlayerCard player={pick.committed_player} />
+        {pick.alt_player && (
+          <p className="subtitle" style={{ textAlign: 'center' }}>
+            Вторым мог быть: {pick.alt_player.name} ({pick.alt_player.rating})
+          </p>
+        )}
+        <button className="btn btn-primary" onClick={continueAfterPick}>
+          {pick.status === 'done' ? 'Готово ✅' : 'Продолжить →'}
+        </button>
+      </div>
+    )
+  }
+
   const candidate = me.pending_candidate
 
   if (me.status === 'done') {
@@ -143,11 +184,9 @@ export function DraftScreen({ sessionId, onFinished, onError }: {
         </div>
       )}
 
-      {skipFlash && <div className="error-banner" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>{skipFlash}</div>}
-
       <div>
         <p className="subtitle" style={{ textAlign: 'center', marginBottom: 8 }}>
-          Позиция: {SLOT_TITLE[me.pending_candidate?.slot ?? slots[me.current_slot_index]]}
+          Позиция: {SLOT_TITLE[candidate?.slot ?? slots[me.current_slot_index]]}
         </p>
         {candidate ? (
           <PlayerCard player={candidate.player} />

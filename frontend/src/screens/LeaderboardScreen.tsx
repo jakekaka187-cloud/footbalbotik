@@ -25,7 +25,7 @@ export function LeaderboardScreen({ onBack, onError }: { onBack: () => void; onE
 
       <div className="tabs">
         <div className={`tab ${scope === 'season' ? 'active' : ''}`} onClick={() => setScope('season')}>
-          Конкурс
+          Топ игроков
         </div>
         <div className={`tab ${scope === 'alltime' ? 'active' : ''}`} onClick={() => setScope('alltime')}>
           Всё время
