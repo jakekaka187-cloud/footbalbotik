@@ -2,10 +2,12 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiohttp import web
 
-from config import BOT_TOKEN
+from config import BOT_TOKEN, PORT, DISABLE_POLLING
 from database.db import init_db
-from handlers import common, game_solo, game_pvp, profile, leaderboard, game_clubs, game_transfers
+from handlers import common
+from webapp.api import create_app
 
 logging.basicConfig(
     level=logging.INFO,
@@ -14,25 +16,34 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+async def run_web_server(bot: Bot):
+    app = create_app(bot)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", PORT)
+    await site.start()
+    logger.info(f"Web server started on 0.0.0.0:{PORT}")
+    await asyncio.Event().wait()
+
+
 async def main():
     bot = Bot(token=BOT_TOKEN)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
-    # Init DB
     await init_db()
 
-    # Register routers
     dp.include_router(common.router)
-    dp.include_router(game_solo.router)
-    dp.include_router(game_pvp.router)
-    dp.include_router(profile.router)
-    dp.include_router(leaderboard.router)
-    dp.include_router(game_clubs.router)
-    dp.include_router(game_transfers.router)
 
-    logger.info("Bot started!")
-    await dp.start_polling(bot)
+    if DISABLE_POLLING:
+        logger.info("DISABLE_POLLING=1 — running web server only (local dev mode)")
+        await run_web_server(bot)
+    else:
+        logger.info("Bot started!")
+        await asyncio.gather(
+            dp.start_polling(bot),
+            run_web_server(bot),
+        )
 
 
 if __name__ == "__main__":

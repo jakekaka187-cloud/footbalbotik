@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+.env
+football_bot.db
+*.MOV
+*.mp4
+bot_log.txt
+debug_test.py
+.git/
+.gitignore
+frontend/node_modules/
+frontend/dist/

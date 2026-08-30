@@ -4,28 +4,32 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
-BOT_USERNAME = os.getenv("BOT_USERNAME", "your_bot")  # без @, нужен для реф-ссылок
+BOT_USERNAME = os.getenv("BOT_USERNAME", "your_bot")  # без @, нужен для реф-ссылок и deep link'ов
 ADMIN_ID = 724703528
 DATABASE_URL = os.getenv("DATABASE_URL", "football_bot.db")
 
-# Game settings
-MAX_HINTS_BEFORE_PENALTY = 3       # After 3 clubs shown — reduced points
-MAX_CLUBS_TOTAL = 15                # Max clubs to show before game ends
-# ── Scoring (all games normalized to same scale) ──────────────────────────────
-# Career solo/PvP: points by clubs shown
-POINTS_TABLE = {
-    1: 100,
-    2: 80,
-    3: 60,
-    4: 40,
-    5: 20,
+# Web server (Mini App backend)
+PORT = int(os.getenv("PORT", 8000))
+WEBAPP_URL = os.getenv("WEBAPP_URL", "")  # публичный HTTPS-адрес мини-аппы, из Railway
+WEBAPP_SHORT_NAME = os.getenv("WEBAPP_SHORT_NAME", "")  # short name мини-аппы, из BotFather
+
+# Local dev only — NEVER set these in production (Railway)
+DEV_MODE = os.getenv("DEV_MODE", "0") == "1"  # bypasses Telegram initData signature check
+DISABLE_POLLING = os.getenv("DISABLE_POLLING", "0") == "1"  # run web server without bot polling
+
+# Draft game
+DRAFT_FORMATION = ["GK", "DEF", "MID1", "MID2", "FWD"]
+SLOT_POSITION = {
+    "GK": "Вратарь",
+    "DEF": "Защитник",
+    "MID1": "Полузащитник",
+    "MID2": "Полузащитник",
+    "FWD": "Нападающий",
 }
-POINTS_DEFAULT = 10  # 6+ clubs shown
 
 # Competition
 COMPETITION_END_DATE = "01.06.2026"
-COMPETITION_MIN_WINS = 3  # minimum wins to appear in competition leaderboard
+COMPETITION_MIN_DRAFTS = 3
 
 # PvP settings
-PVP_ROOM_EXPIRY_SECONDS = 600      # 10 minutes to join
-PVP_TURN_TIMEOUT_SECONDS = 60      # 1 minute per turn
+PVP_ROOM_EXPIRY_SECONDS = 600

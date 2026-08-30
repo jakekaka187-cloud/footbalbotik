@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime
 
@@ -20,28 +20,3 @@ class User:
     season_wins: int = 0
     referred_by: Optional[int] = None
     referral_count: int = 0
-
-
-@dataclass
-class Footballer:
-    id: int
-    name: str
-    clubs: list  # list of dicts: [{name, years, emoji}]
-    nationality: str
-    position: str
-    difficulty: int  # 1-3 (easy/medium/hard)
-    hint_text: Optional[str] = None  # additional hint if needed
-
-
-@dataclass
-class GameSession:
-    session_id: str
-    mode: str  # 'solo' or 'pvp'
-    footballer_id: int
-    clubs_shown: int = 0
-    player1_id: Optional[int] = None
-    player2_id: Optional[int] = None
-    current_turn: Optional[int] = None  # telegram_id
-    status: str = "waiting"  # waiting / active / finished
-    winner_id: Optional[int] = None
-    created_at: Optional[datetime] = None
