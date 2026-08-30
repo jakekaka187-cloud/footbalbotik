@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Optional
 
 from aiogram import Bot
 from aiogram.utils.web_app import safe_parse_webapp_init_data
@@ -85,13 +86,33 @@ async def handle_auth(request: web.Request) -> web.Response:
     })
 
 
+async def _require_subscribed(request: web.Request) -> Optional[web.Response]:
+    """Hard server-side gate for endpoints that start/join a game — the frontend's
+    GateScreen is only a UX nicety and can be bypassed by calling the API directly."""
+    if DEV_MODE:
+        return None
+    bot: Bot = request.app["bot"]
+    tg_user = request["tg_user"]
+    if not await is_subscribed(bot, tg_user.id):
+        return web.json_response(
+            {"error": "Нужна подписка на канал, чтобы играть", "code": "not_subscribed",
+             "channel_username": CHANNEL_USERNAME},
+            status=403,
+        )
+    return None
+
+
 async def handle_create_solo(request: web.Request) -> web.Response:
+    if (err := await _require_subscribed(request)) is not None:
+        return err
     tg_user = request["tg_user"]
     result = await draft_service.create_solo_session(tg_user.id)
     return web.json_response(result, status=201)
 
 
 async def handle_create_pvp(request: web.Request) -> web.Response:
+    if (err := await _require_subscribed(request)) is not None:
+        return err
     tg_user = request["tg_user"]
     from config import BOT_USERNAME, WEBAPP_SHORT_NAME
     result = await draft_service.create_pvp_room(tg_user.id)
@@ -100,6 +121,8 @@ async def handle_create_pvp(request: web.Request) -> web.Response:
 
 
 async def handle_join_pvp(request: web.Request) -> web.Response:
+    if (err := await _require_subscribed(request)) is not None:
+        return err
     tg_user = request["tg_user"]
     room_code = request.match_info["room_code"].upper()
     result = await draft_service.join_pvp_room(room_code, tg_user.id)

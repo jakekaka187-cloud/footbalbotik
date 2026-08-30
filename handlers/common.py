@@ -1,6 +1,6 @@
 from aiogram import Router, F, Bot
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 
 from config import BOT_USERNAME, ADMIN_ID, WEBAPP_URL, COMPETITION_MIN_DRAFTS
@@ -20,13 +20,17 @@ WELCOME_TEXT = (
 
 
 async def _send_open_app(message: Message, first_name: str):
+    # Clears any leftover reply keyboard from the old bot version — harmless no-op
+    # if the user never had one.
     if not WEBAPP_URL:
         await message.answer(
             WELCOME_TEXT + "\n\n⚠️ Мини-приложение ещё не настроено (WEBAPP_URL).",
             parse_mode="Markdown",
+            reply_markup=ReplyKeyboardRemove(),
         )
         return
-    await message.answer(WELCOME_TEXT, parse_mode="Markdown", reply_markup=webapp_open_keyboard(WEBAPP_URL))
+    await message.answer(WELCOME_TEXT, parse_mode="Markdown", reply_markup=ReplyKeyboardRemove())
+    await message.answer("👇", reply_markup=webapp_open_keyboard(WEBAPP_URL))
 
 
 @router.message(CommandStart())
